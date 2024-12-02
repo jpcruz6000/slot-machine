@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  .reel {
+    display: inline-flex;
+    width: 100px;
+    height: 301px;
+    background-image: url("slottiles4.png");
+    position: relative;
+  }
+</style>
+</head>
+<body>
+
+<div class="reel" id="reel1"></div>
+<div class="reel" id="reel2"></div>
+<div class="reel" id="reel3"></div>
+<button id="btn" onclick="newTurn()">SPIN</button>
+<p id="txt">Ready!</p>
+
+<script>
+const reels = document.querySelectorAll('.reel'); // Get all reels using class
+const btn = document.getElementById('btn');
+const text = document.getElementById('txt');
+
+let results = [0, 0, 0]; // Array to store final positions
+
+function newTurn() {
+  btn.disabled = true;
+  btn.style.backgroundColor = "grey";
+
+  const degrees = []; // Store all random degrees
+  const intervals = []; // Store all intervals
+
+  for (let i = 0; i < reels.length; i++) {
+   // degrees.push(Math.floor(Math.random() * (1000 - 300)) + 300);
+	degrees.push(Math.ceil((Math.floor(Math.random() * (1000 - 300)) + 300) / 100) * 100);
+
+    intervals.push(spinReel(reels[i], degrees[i]));
+	
+  }
+}
+
+function spinReel(reel, degree) {
+  let pos = degree+900;
+  let isAnimating = true;
+  
+ console.log("p "+pos); 
+console.log("d "+degree);
+
+  const animate = () => {
+    if (isAnimating) {
+		
+      // Calculate the new position
+      const delta = (degree - pos) / 20; // Adjust divisor for speed
+      pos += Math.abs(delta) < 1 ? delta : Math.sign(delta); // Smooth stopping
+
+      // Update reel position
+      reel.style.backgroundPosition = `0% ${pos}%`;
+
+      // Check if animation is finished
+      if (Math.abs(pos - degree) < 1) {
+        isAnimating = false;
+        //const finalPos = Math.ceil(pos / 100) * 100;
+		
+        reel.style.backgroundPosition = `0% ${pos}%`;
+        // Convert reels to an array and find the index
+		const reelsArray = Array.from(reels);
+		const reelIndex = reelsArray.indexOf(reel);
+		results[reelIndex] = pos; // Store final position for each reel
+		console.log(results);
+		console.log(pos);
+		
+        checkWin();
+      } else {
+        // Request next animation frame
+        requestAnimationFrame(animate);
+      }
+    }
+  };
+
+  animate();
+  return animate; // Function itself can be returned for cancellation if needed
+}
+
+function checkWin() {
+  if (results.every((x, i) => x === results[0])) {
+    text.innerHTML = "3 of a kind";
+  } else if (results.some((x, i) => x === results[(i + 1) % 3]) || results.some((x, i) => x === results[(i - 1 + 3) % 3])) {
+    text.innerHTML = "2 of a kind";
+	
+  } else {
+    text.innerHTML = "nope";
+  }
+  btn.disabled = false;
+  btn.style.backgroundColor = "green";
+  //results = [0, 0, 0]; // Reset results for next spin
+}
+</script>
+
+</body>
+</html>
